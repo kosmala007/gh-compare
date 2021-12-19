@@ -108,6 +108,9 @@ class GitHubClient
     /**
      * @see https://docs.github.com/en/search-github/searching-on-github/searching-issues-and-pull-requests#search-only-issues-or-pull-requests
      * @see https://docs.github.com/en/rest/reference/search#constructing-a-search-query
+     *
+     * @throws NotFoundResourceException
+     * @throws GuzzleException|InvalidPullStateException
      */
     public function getCountPulls(string $repoName, string $state = null): int
     {
