@@ -6,7 +6,7 @@ namespace App\Dto;
 
 use DateTime;
 
-class Release
+class GitHubRelease
 {
     public function __construct(
         private int $id,

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Client;
 
-use App\Dto\Release;
-use App\Dto\Repo;
+use App\Dto\GitHubRelease;
+use App\Dto\GitHubRepo;
 use App\Exception\ForbiddenRepoException;
 use App\Exception\InvalidPullStateException;
 use App\Exception\MovedPermanentlyRepoException;
@@ -37,7 +37,7 @@ class GitHubClient
      * @throws NotFoundRepoException
      * @throws ForbiddenRepoException
      */
-    public function getRepo(string $repoName): Repo
+    public function getRepo(string $repoName): GitHubRepo
     {
         try {
             $response = $this->client->get('repos/'.$repoName);
@@ -55,7 +55,7 @@ class GitHubClient
         }
         $data = json_decode($response->getBody()->getContents(), true);
 
-        return new Repo(
+        return new GitHubRepo(
             $data['id'],
             $data['name'],
             $data['full_name'],
@@ -74,7 +74,7 @@ class GitHubClient
      * @throws GuzzleException
      * @throws Exception
      */
-    public function getLatestRelease(string $repoName): ?Release
+    public function getLatestRelease(string $repoName): ?GitHubRelease
     {
         try {
             $response = $this->client->get("repos/$repoName/releases", [
@@ -95,7 +95,7 @@ class GitHubClient
         }
         $data = $data[0];
 
-        return new Release(
+        return new GitHubRelease(
             $data['id'],
             $data['url'],
             $data['name'],

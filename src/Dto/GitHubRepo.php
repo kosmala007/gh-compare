@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Dto;
 
-class Repo
+class GitHubRepo
 {
     public function __construct(
         private int $id,

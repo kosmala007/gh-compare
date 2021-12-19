@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Unit;
 
 use App\Client\GitHubClient;
-use App\Dto\Release;
-use App\Dto\Repo;
+use App\Dto\GitHubRelease;
+use App\Dto\GitHubRepo;
 use App\Exception\InvalidPullStateException;
 use App\Exception\NotFoundRepoException;
 use App\Exception\NotFoundResourceException;
@@ -19,7 +19,7 @@ class GitHubClientTest extends TestCase
         $client = new GitHubClient();
         $repo = $client->getRepo('symfony/symfony');
 
-        $this->assertInstanceOf(Repo::class, $repo);
+        $this->assertInstanceOf(GitHubRepo::class, $repo);
     }
 
     public function testNotFoundRepo()
@@ -35,7 +35,7 @@ class GitHubClientTest extends TestCase
         $client = new GitHubClient();
         $release = $client->getLatestRelease('symfony/symfony');
 
-        $this->assertInstanceOf(Release::class, $release);
+        $this->assertInstanceOf(GitHubRelease::class, $release);
     }
 
     public function testNotFoundResourceWhenGetRelease(): void
