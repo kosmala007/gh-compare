@@ -7,9 +7,7 @@ namespace App\Dto;
 use DateTime;
 use JMS\Serializer\Annotation as JMS;
 
-/**
- * @JMS\ExclusionPolicy("none")
- */
+#[JMS\ExclusionPolicy('none')]
 class ComparedRepo
 {
     public function __construct(
