@@ -7,6 +7,7 @@ namespace App\Client;
 use App\Dto\Release;
 use App\Dto\Repo;
 use App\Exception\ForbiddenRepoException;
+use App\Exception\InvalidPullStateException;
 use App\Exception\MovedPermanentlyRepoException;
 use App\Exception\NotFoundRepoException;
 use App\Exception\NotFoundResourceException;
@@ -17,6 +18,9 @@ use GuzzleHttp\Exception\GuzzleException;
 
 class GitHubClient
 {
+    public const PULL_STATE_OPEN = 'open';
+    public const PULL_STATE_CLOSE = 'closed';
+
     public const ENDPOINT = 'https://api.github.com/';
     private Client $client;
 
@@ -26,6 +30,8 @@ class GitHubClient
     }
 
     /**
+     * @see https://docs.github.com/en/rest/reference/repos#get-a-repository
+     *
      * @throws GuzzleException
      * @throws MovedPermanentlyRepoException
      * @throws NotFoundRepoException
@@ -62,6 +68,8 @@ class GitHubClient
     }
 
     /**
+     * @see https://docs.github.com/en/rest/reference/releases#list-releases
+     *
      * @throws NotFoundResourceException
      * @throws GuzzleException
      * @throws Exception
@@ -95,5 +103,39 @@ class GitHubClient
             new DateTime($data['created_at']),
             new DateTime($data['published_at']),
         );
+    }
+
+    /**
+     * @see https://docs.github.com/en/search-github/searching-on-github/searching-issues-and-pull-requests#search-only-issues-or-pull-requests
+     * @see https://docs.github.com/en/rest/reference/search#constructing-a-search-query
+     */
+    public function getCountPulls(string $repoName, string $state = null): int
+    {
+        $querySearch = [
+            'repo:'.$repoName,
+            'is:pr',
+        ];
+
+        if ($state) {
+            if (!in_array($state, [self::PULL_STATE_OPEN, self::PULL_STATE_CLOSE])) {
+                throw new InvalidPullStateException();
+            }
+            $querySearch[] = 'state:'.$state;
+        }
+
+        try {
+            $response = $this->client->get('search/issues', [
+                'query' => 'per_page=1&q='.implode('+', $querySearch),
+            ]);
+        } catch (GuzzleException $e) {
+            if (404 == $e->getCode()) {
+                throw new NotFoundResourceException();
+            }
+
+            throw $e;
+        }
+        $data = json_decode($response->getBody()->getContents(), true);
+
+        return $data['total_count'];
     }
 }

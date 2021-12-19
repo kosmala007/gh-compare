@@ -7,6 +7,7 @@ namespace App\Tests\Unit;
 use App\Client\GitHubClient;
 use App\Dto\Release;
 use App\Dto\Repo;
+use App\Exception\InvalidPullStateException;
 use App\Exception\NotFoundRepoException;
 use App\Exception\NotFoundResourceException;
 use PHPUnit\Framework\TestCase;
@@ -51,5 +52,37 @@ class GitHubClientTest extends TestCase
         $release = $client->getLatestRelease('octocat/Hello-World');
 
         $this->assertEmpty($release);
+    }
+
+    public function testGetPullsCount(): void
+    {
+        $client = new GitHubClient();
+        $count = $client->getCountPulls('symfony/symfony');
+
+        $this->assertIsInt($count);
+    }
+
+    public function testGetOpenPullsCount(): void
+    {
+        $client = new GitHubClient();
+        $count = $client->getCountPulls('symfony/symfony', GitHubClient::PULL_STATE_OPEN);
+
+        $this->assertIsInt($count);
+    }
+
+    public function testGetClosePullsCount(): void
+    {
+        $client = new GitHubClient();
+        $count = $client->getCountPulls('symfony/symfony', GitHubClient::PULL_STATE_CLOSE);
+
+        $this->assertIsInt($count);
+    }
+
+    public function testInvalidPullState(): void
+    {
+        $this->expectException(InvalidPullStateException::class);
+
+        $client = new GitHubClient();
+        $release = $client->getCountPulls('test/not-found', 'invalid');
     }
 }
