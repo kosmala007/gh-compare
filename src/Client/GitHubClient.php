@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Client;
 
+use App\Dto\Release;
 use App\Dto\Repo;
 use App\Exception\ForbiddenRepoException;
 use App\Exception\MovedPermanentlyRepoException;
 use App\Exception\NotFoundRepoException;
+use App\Exception\NotFoundResourceException;
+use DateTime;
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 
@@ -32,13 +36,13 @@ class GitHubClient
         try {
             $response = $this->client->get('repos/'.$repoName);
         } catch (GuzzleException $e) {
-            if ($e->getCode() == 301) {
+            if (301 == $e->getCode()) {
                 throw new MovedPermanentlyRepoException();
             }
-            if ($e->getCode() == 404) {
+            if (404 == $e->getCode()) {
                 throw new NotFoundRepoException();
             }
-            if ($e->getCode() == 403) {
+            if (403 == $e->getCode()) {
                 throw new ForbiddenRepoException();
             }
             throw $e;
@@ -54,6 +58,42 @@ class GitHubClient
             $data['forks_count'],
             $data['stargazers_count'],
             $data['watchers_count'],
+        );
+    }
+
+    /**
+     * @throws NotFoundResourceException
+     * @throws GuzzleException
+     * @throws Exception
+     */
+    public function getLatestRelease(string $repoName): ?Release
+    {
+        try {
+            $response = $this->client->get("repos/$repoName/releases", [
+                'query' => [
+                    'per_page' => 1,
+                ],
+            ]);
+        } catch (GuzzleException $e) {
+            if (404 == $e->getCode()) {
+                throw new NotFoundResourceException();
+            }
+
+            throw $e;
+        }
+        $data = json_decode($response->getBody()->getContents(), true);
+        if (!isset($data[0])) {
+            return null;
+        }
+        $data = $data[0];
+
+        return new Release(
+            $data['id'],
+            $data['url'],
+            $data['name'],
+            $data['tag_name'],
+            new DateTime($data['created_at']),
+            new DateTime($data['published_at']),
         );
     }
 }
