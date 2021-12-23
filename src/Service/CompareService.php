@@ -47,12 +47,12 @@ class CompareService
         $closePullRequestCount = $this->gitHubClient->getCountPulls($name, GitHubClient::PULL_STATE_CLOSE);
 
         return new ComparedRepo(
-            $repo->name(),
-            $repo->url(),
-            $repo->starsCount(),
-            $repo->forksCount(),
-            $repo->wathersCount(),
-            $release ? $release->publishedAt() : null,
+            $repo->getName(),
+            $repo->getUrl(),
+            $repo->getStarsCount(),
+            $repo->getForksCount(),
+            $repo->getWathersCount(),
+            $release ? $release->getPublishedAt() : null,
             $openPullRequestCount,
             $closePullRequestCount,
         );

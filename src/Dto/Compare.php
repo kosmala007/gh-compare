@@ -16,12 +16,12 @@ class Compare
         private ComparedRepo $second,
     ) {}
 
-    public function first(): ComparedRepo
+    public function getFirst(): ComparedRepo
     {
         return $this->first;
     }
 
-    public function second(): ComparedRepo
+    public function getSecond(): ComparedRepo
     {
         return $this->second;
     }

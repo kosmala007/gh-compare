@@ -17,32 +17,32 @@ class GitHubRelease
         private DateTime $publishedAt,
     ) {}
 
-    public function id(): int
+    public function getId(): int
     {
         return $this->id;
     }
 
-    public function url(): string
+    public function getUrl(): string
     {
         return $this->url;
     }
 
-    public function name(): string
+    public function getName(): string
     {
         return $this->name;
     }
 
-    public function tagName(): string
+    public function getTagName(): string
     {
         return $this->tagName;
     }
 
-    public function createdAt(): DateTime
+    public function getCreatedAt(): DateTime
     {
         return $this->createdAt;
     }
 
-    public function publishedAt(): DateTime
+    public function getPublishedAt(): DateTime
     {
         return $this->publishedAt;
     }
