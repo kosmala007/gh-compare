@@ -4,11 +4,6 @@ declare(strict_types=1);
 
 namespace App\Dto;
 
-use JMS\Serializer\Annotation as JMS;
-
-/**
- * @JMS\ExclusionPolicy("none")
- */
 class Compare
 {
     public function __construct(
