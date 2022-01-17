@@ -12,7 +12,7 @@ use App\Exception\InvalidPullStateException;
 use App\Exception\MovedPermanentlyRepoException;
 use App\Exception\NotFoundRepoException;
 use App\Exception\NotFoundResourceException;
-use GuzzleHttp\Exception\GuzzleException;
+use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 
 class CompareService
 {
@@ -20,6 +20,14 @@ class CompareService
         private GitHubClient $gitHubClient,
     ) {}
 
+    /**
+     * @throws NotFoundResourceException
+     * @throws ExceptionInterface
+     * @throws NotFoundRepoException
+     * @throws InvalidPullStateException
+     * @throws MovedPermanentlyRepoException
+     * @throws ForbiddenRepoException
+     */
     public function compare(string $firstRepoUrl, string $secondRepoUrl): Compare
     {
         $firstGitHubRepo = $this->getComparedRepo($this->getRepoName($firstRepoUrl));
@@ -36,8 +44,8 @@ class CompareService
      * @throws NotFoundRepoException
      * @throws InvalidPullStateException
      * @throws MovedPermanentlyRepoException
-     * @throws GuzzleException
      * @throws ForbiddenRepoException
+     * @throws ExceptionInterface
      */
     public function getComparedRepo(string $name): ComparedRepo
     {
@@ -47,12 +55,12 @@ class CompareService
         $closePullRequestCount = $this->gitHubClient->getCountPulls($name, GitHubClient::PULL_STATE_CLOSE);
 
         return new ComparedRepo(
-            $repo->name(),
-            $repo->url(),
-            $repo->starsCount(),
-            $repo->forksCount(),
-            $repo->wathersCount(),
-            $release ? $release->publishedAt() : null,
+            $repo->getName(),
+            $repo->getUrl(),
+            $repo->getStarsCount(),
+            $repo->getForksCount(),
+            $repo->getWathersCount(),
+            $release ? $release->getPublishedAt() : null,
             $openPullRequestCount,
             $closePullRequestCount,
         );

@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\Dto;
 
 use DateTime;
-use JMS\Serializer\Annotation as JMS;
 
-#[JMS\ExclusionPolicy('none')]
 class ComparedRepo
 {
     public function __construct(
@@ -21,42 +19,42 @@ class ComparedRepo
         private int $closedPullRequestCount,
     ) {}
 
-    public function name(): string
+    public function getName(): string
     {
         return $this->name;
     }
 
-    public function url(): string
+    public function getUrl(): string
     {
         return $this->url;
     }
 
-    public function starsCount(): int
+    public function getStarsCount(): int
     {
         return $this->starsCount;
     }
 
-    public function forksCount(): int
+    public function getForksCount(): int
     {
         return $this->forksCount;
     }
 
-    public function watchersCount(): int
+    public function getWatchersCount(): int
     {
         return $this->watchersCount;
     }
 
-    public function latestReleaseDate(): ?DateTime
+    public function getLatestReleaseDate(): ?DateTime
     {
         return $this->latestReleaseDate;
     }
 
-    public function openPullRequestCount(): int
+    public function getOpenPullRequestCount(): int
     {
         return $this->openPullRequestCount;
     }
 
-    public function closedPullRequestCount(): int
+    public function getClosedPullRequestCount(): int
     {
         return $this->closedPullRequestCount;
     }

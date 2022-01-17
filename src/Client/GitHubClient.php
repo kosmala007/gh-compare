@@ -12,48 +12,44 @@ use App\Exception\MovedPermanentlyRepoException;
 use App\Exception\NotFoundRepoException;
 use App\Exception\NotFoundResourceException;
 use DateTime;
-use Exception;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
+use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-class GitHubClient
+class GitHubClient implements Client
 {
     public const PULL_STATE_OPEN = 'open';
     public const PULL_STATE_CLOSE = 'closed';
+    private HttpClientInterface $client;
 
-    public const ENDPOINT = 'https://api.github.com/';
-    private Client $client;
-
-    public function __construct()
+    public function __construct(HttpClientInterface $githubClient)
     {
-        $this->client = new Client(['base_uri' => self::ENDPOINT]);
+        $this->client = $githubClient;
     }
 
     /**
      * @see https://docs.github.com/en/rest/reference/repos#get-a-repository
      *
-     * @throws GuzzleException
      * @throws MovedPermanentlyRepoException
      * @throws NotFoundRepoException
      * @throws ForbiddenRepoException
+     * @throws ExceptionInterface
      */
     public function getRepo(string $repoName): GitHubRepo
     {
         try {
-            $response = $this->client->get('repos/'.$repoName);
-        } catch (GuzzleException $e) {
-            if (301 == $e->getCode()) {
-                throw new MovedPermanentlyRepoException();
-            }
-            if (404 == $e->getCode()) {
-                throw new NotFoundRepoException();
-            }
-            if (403 == $e->getCode()) {
-                throw new ForbiddenRepoException();
+            $response = $this->client->request('GET', 'repos/'.$repoName);
+            $data = $response->toArray();
+        } catch (ExceptionInterface $e) {
+            switch ($e->getCode()) {
+                case 301:
+                    throw new MovedPermanentlyRepoException();
+                case 404:
+                    throw new NotFoundRepoException();
+                case 403:
+                    throw new ForbiddenRepoException();
             }
             throw $e;
         }
-        $data = json_decode($response->getBody()->getContents(), true);
 
         return new GitHubRepo(
             $data['id'],
@@ -71,25 +67,24 @@ class GitHubClient
      * @see https://docs.github.com/en/rest/reference/releases#list-releases
      *
      * @throws NotFoundResourceException
-     * @throws GuzzleException
-     * @throws Exception
+     * @throws ExceptionInterface
      */
     public function getLatestRelease(string $repoName): ?GitHubRelease
     {
         try {
-            $response = $this->client->get("repos/$repoName/releases", [
+            $response = $this->client->request('GET', "repos/$repoName/releases", [
                 'query' => [
                     'per_page' => 1,
                 ],
             ]);
-        } catch (GuzzleException $e) {
-            if (404 == $e->getCode()) {
-                throw new NotFoundResourceException();
+            $data = $response->toArray();
+        } catch (ExceptionInterface $e) {
+            switch ($e->getCode()) {
+                case 404:
+                    throw new NotFoundResourceException();
             }
-
             throw $e;
         }
-        $data = json_decode($response->getBody()->getContents(), true);
         if (!isset($data[0])) {
             return null;
         }
@@ -109,8 +104,9 @@ class GitHubClient
      * @see https://docs.github.com/en/search-github/searching-on-github/searching-issues-and-pull-requests#search-only-issues-or-pull-requests
      * @see https://docs.github.com/en/rest/reference/search#constructing-a-search-query
      *
+     * @throws InvalidPullStateException
      * @throws NotFoundResourceException
-     * @throws GuzzleException|InvalidPullStateException
+     * @throws ExceptionInterface
      */
     public function getCountPulls(string $repoName, string $state = null): int
     {
@@ -127,18 +123,16 @@ class GitHubClient
         }
 
         try {
-            $response = $this->client->get('search/issues', [
-                'query' => 'per_page=1&q='.implode('+', $querySearch),
-            ]);
-        } catch (GuzzleException $e) {
-            if (404 == $e->getCode()) {
-                throw new NotFoundResourceException();
+            $response = $this->client->request('GET', 'search/issues?per_page=1&q='.implode('+', $querySearch));
+            $data = $response->toArray();
+        } catch (ExceptionInterface $e) {
+            switch ($e->getCode()) {
+                case 404:
+                    throw new NotFoundResourceException();
             }
-
             throw $e;
         }
-        $data = json_decode($response->getBody()->getContents(), true);
 
-        return $data['total_count'];
+        return $data['total_count'] ?? 0;
     }
 }

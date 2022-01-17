@@ -17,37 +17,37 @@ class GitHubRepo
         private int $wathersCount,
     ) {}
 
-    public function name(): string
+    public function getName(): string
     {
         return $this->name;
     }
 
-    public function fullName(): string
+    public function getFullName(): string
     {
         return $this->fullName;
     }
 
-    public function url(): string
+    public function getUrl(): string
     {
         return $this->url;
     }
 
-    public function description(): string
+    public function getDescription(): string
     {
         return $this->description;
     }
 
-    public function forksCount(): int
+    public function getForksCount(): int
     {
         return $this->forksCount;
     }
 
-    public function starsCount(): int
+    public function getStarsCount(): int
     {
         return $this->starsCount;
     }
 
-    public function wathersCount(): int
+    public function getWathersCount(): int
     {
         return $this->wathersCount;
     }
